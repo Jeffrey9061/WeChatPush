@@ -1,0 +1,143 @@
+﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>身份认证</title>
+    <link href="~/Scripts/jquery-easyui-1.4.5/themes/bootstrap/easyui.css" rel="stylesheet" />
+    <link href="~/Scripts/jquery-easyui-1.4.5/themes/mobile.css" rel="stylesheet" />
+    <link href="~/Scripts/jquery-easyui-1.4.5/themes/icon.css" rel="stylesheet" />
+    <style type="text/css">
+
+        .line {
+            width: 100%;
+            float: left;
+            height: auto;
+            text-align: center;
+            margin-top: 15pt;
+            font-size: x-large;
+        }
+
+        .lineText {
+            width: 100%;
+            float: left;
+            height: auto;
+            text-indent: 5%;
+            text-align: left;
+            font-size: x-large;
+            margin: 0;
+        }
+
+        a {
+            text-decoration: none;
+            color: white;
+        }
+
+        .input {
+            height: 30pt;
+            width: 90%;
+            font-size: x-large;
+            border-radius: 10px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .btn {
+            width: 90%;
+            height: 35pt;
+            font-size: x-large;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div style="width: 100%; text-align: center;">
+        <form id="form1">
+            <div class="line">
+                <div class="lineText">*接收者openid:</div>
+            </div>
+            <div class="line">
+                <input type="text" id="openid" name="openid" class="input" />
+            </div>
+            <div class="line">
+                <div class="lineText">*first.DATA:</div>
+            </div>
+            <div class="line">
+                <input type="text" id="first" name="first" class="input" />
+            </div>
+        </form>
+
+    </div>
+    <div class="line">
+        <input type="button" id="btnSave" class="btn" value="推送" onclick="fPush()" />
+    </div>
+    <script src="~/Scripts/jquery-easyui-1.4.5/jquery.min.js"></script>
+    <script src="~/Scripts/jquery-easyui-1.4.5/jquery.easyui.min.js"></script>
+    <script src="~/Scripts/jquery-easyui-1.4.5/jquery.easyui.mobile.js"></script>
+    <script src="~/Scripts/jquery-easyui-1.4.5/easyloader.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var vCode = getQueryString("code");
+            if (vCode != "" && vCode != null) {
+                $.ajax({
+                    type: 'post',
+                    data: {
+                        code: vCode
+                    },
+                    url: '/Home/getWxInfo',
+                    success: function (sjson) {
+                        $.messager.show({
+                            title: '提示',
+                            msg: '欢迎您的到来（看到这个提示，代表已经成功获取openid和access_token了）。'
+                        });
+                        $("#openid").val(sjson.openid);
+                    }
+                })
+            }
+            else {
+                $.ajax({
+                    type: 'post',
+                    url: '/Home/getCode',
+                    success: function (sjson) {
+                        location.href = sjson;
+                    }
+                })
+            }
+        })
+        //获取url的参数
+        function getQueryString(name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+
+        //推送
+        function fPush() {
+            var vTtile = $("#first").val();
+            $.ajax({
+                type: 'post',
+                data: {
+                    first: vTtile
+                },
+                url: '/Home/Push',
+                success: function (sjson) {
+                    if (sjson.result) {
+                        $.messager.alert("提示", sjson.msg, 'info');
+                    }
+                    else {
+                        $.messager.alert("提示", sjson.msg, 'warning');
+                    }
+                }
+            })
+        }
+    </script>
+</body>
+</html>
